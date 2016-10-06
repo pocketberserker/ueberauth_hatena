@@ -1,6 +1,6 @@
 # Überauth Hatena
 
-> Hatena OAuth2 strategy for Überauth.
+> Hatena strategy for Überauth.
 
 Inspired by [Überauth for Twitter](https://github.com/ueberauth/ueberauth_twitter)
 
@@ -13,7 +13,7 @@ Inspired by [Überauth for Twitter](https://github.com/ueberauth/ueberauth_twitt
     ```elixir
     def deps do
       [{:oauth, github: "tim/erlang-oauth"},
-       {:ueberauth_qiita, "~> 0.1.0"}]
+       {:ueberauth_hatena, "~> 0.1.0"}]
     end
     ```
 
