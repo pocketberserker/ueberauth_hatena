@@ -1,5 +1,7 @@
 # Überauth Hatena
 
+[![Build Status](https://travis-ci.org/pocketberserker/ueberauth_hatena.svg?branch=master)](https://travis-ci.org/pocketberserker/ueberauth_hatena)
+
 > Hatena strategy for Überauth.
 
 Inspired by [Überauth for Twitter](https://github.com/ueberauth/ueberauth_twitter)
