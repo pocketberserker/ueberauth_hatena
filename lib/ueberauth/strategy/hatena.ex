@@ -3,7 +3,11 @@ defmodule Ueberauth.Strategy.Hatena do
   Hatena Strategy for Überauth.
   """
 
-  use Ueberauth.Strategy, uid_field: :url_name
+  use Ueberauth.Strategy, default_scope: "read_public",
+                          uid_field: :url_name,
+                          allowed_request_params: [
+                            :scope
+                          ]
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
@@ -14,7 +18,14 @@ defmodule Ueberauth.Strategy.Hatena do
   Handles initial request for Hatena authentication.
   """
   def handle_request!(conn) do
-    token = Hatena.OAuth.request_token!([], [redirect_uri: callback_url(conn)])
+    allowed_params = conn
+      |> option(:allowed_request_params)
+      |> Enum.map(&to_string/1)
+    params = conn.params
+      |> maybe_replace_param(conn, "scope", :default_scope)
+      |> Enum.filter(fn {k,_v} -> Enum.member?(allowed_params, k) end)
+      |> Enum.map(fn {k,v} -> {String.to_existing_atom(k), v} end)
+    token = Hatena.OAuth.request_token!(params, [redirect_uri: callback_url(conn)])
 
     conn
     |> put_session(:hatena_token, token)
@@ -115,5 +126,19 @@ defmodule Ueberauth.Strategy.Hatena do
 
   defp option(conn, key) do
     Dict.get(options(conn), key, Dict.get(default_options, key))
+  end
+  defp option(nil, conn, key), do: option(conn, key)
+  defp option(value, _conn, _key), do: value
+
+  defp maybe_replace_param(params, conn, name, config_key) do
+    if params[name] do
+      params
+    else
+      Map.put(
+        params,
+        name,
+        option(params[name], conn, config_key)
+      )
+    end
   end
 end
