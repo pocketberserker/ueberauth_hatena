@@ -18,15 +18,15 @@ defmodule UeberauthHatena.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :httpoison, :oauth, :ueberauth]]
+    [applications: [:logger, :poison, :oauth, :ueberauth]]
   end
 
   defp deps do
     [{:ueberauth, "~> 0.4"},
      {:oauth, github: "tim/erlang-oauth"},
-     {:httpoison, "~> 0.9"},
-     {:ex_doc, "~> 0.1", only: :dev},
-     {:earmark, ">= 0.0.0", only: :dev}]
+     {:poison, "~> 3.0"},
+     {:ex_doc, "~> 0.14", only: :dev},
+     {:earmark, ">= 1.0.3", only: :dev}]
   end
 
   defp docs do
