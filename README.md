@@ -15,7 +15,7 @@ Inspired by [Überauth for Twitter](https://github.com/ueberauth/ueberauth_twitt
     ```elixir
     def deps do
       [{:oauth, github: "tim/erlang-oauth"},
-       {:ueberauth_hatena, "~> 0.1.0"}]
+       {:ueberauth_hatena, "pocketberserker/ueberauth_hatena"}]
     end
     ```
 
