@@ -125,7 +125,7 @@ defmodule Ueberauth.Strategy.Hatena do
   end
 
   defp option(conn, key) do
-    Dict.get(options(conn), key, Dict.get(default_options, key))
+    Keyword.get(options(conn), key, Keyword.get(default_options(), key))
   end
   defp option(nil, conn, key), do: option(conn, key)
   defp option(value, _conn, _key), do: value
