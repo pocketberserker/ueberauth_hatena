@@ -8,6 +8,8 @@ defmodule Ueberauth.Strategy.Hatena.OAuth do
     redirect_uri: System.get_env("HATENA_REDIRECT_URI")
   """
 
+  alias Ueberauth.Strategy.Hatena.OAuth.Internal
+
   @defaults [access_token: "https://www.hatena.com/oauth/token",
              authorize_url: "https://www.hatena.ne.jp/oauth/authorize",
              request_token: "https://www.hatena.com/oauth/initiate"]
@@ -16,9 +18,8 @@ defmodule Ueberauth.Strategy.Hatena.OAuth do
     opts
     |> client
     |> to_url(:access_token)
-    |> String.to_char_list
-    |> :oauth.get([oauth_verifier: verifier], consumer(client), token, token_secret)
-    |> decode_access_response
+    |> Internal.get(["oauth_verifier": verifier], consumer(client()), token, token_secret)
+    |> decode_response
   end
 
   def access_token!(access_token, verifier, opts \\ []) do
@@ -31,7 +32,7 @@ defmodule Ueberauth.Strategy.Hatena.OAuth do
   def authorize_url!({token, _token_secret}, opts \\ []) do
     opts
     |> client
-    |> to_url(:authorize_url, %{"oauth_token" => List.to_string(token)})
+    |> to_url(:authorize_url, %{"oauth_token" => token})
   end
 
   def client(opts \\ []) do
@@ -45,21 +46,19 @@ defmodule Ueberauth.Strategy.Hatena.OAuth do
 
   def get(url, access_token), do: get(url, [], access_token)
   def get(url, params, {token, token_secret}) do
-    client
+    client()
     |> to_url(url)
-    |> String.to_char_list
-    |> :oauth.get(params, consumer(client), token, token_secret)
+    |> Internal.get(params, consumer(client()), token, token_secret)
   end
 
   def request_token(params \\ [], opts \\ []) do
     client = client(opts)
-    params = Keyword.put_new(params, :oauth_callback, client.redirect_uri)
+    params = [{"oauth_callback", client.redirect_uri} | params]
 
     client
     |> to_url(:request_token)
-    |> String.to_char_list
-    |> :oauth.get(params, consumer(client))
-    |> decode_request_response
+    |> Internal.get(params, consumer(client))
+    |> decode_response
   end
 
   def request_token!(params \\ [], opts \\ []) do
@@ -71,25 +70,22 @@ defmodule Ueberauth.Strategy.Hatena.OAuth do
 
   defp consumer(client), do: {client.consumer_key, client.consumer_secret, :hmac_sha1}
 
-  defp decode_access_response({:ok, {{_, 200, _}, _, _} = resp}) do
-    params = :oauth.params_decode(resp)
-    token = :oauth.token(params)
-    token_secret = :oauth.token_secret(params)
+  defp decode_response({:ok, %{status_code: 200, body: body, headers: _}}) do
+    params = Internal.params_decode(body)
+    token = Internal.token(params)
+    token_secret = Internal.token_secret(params)
 
     {:ok, {token, token_secret}}
   end
 
-  defp decode_access_response(error), do: {:error, error}
-
-  defp decode_request_response({:ok, {{_, 200, _}, _, _} = resp}) do
-    params = :oauth.params_decode(resp)
-    token = :oauth.token(params)
-    token_secret = :oauth.token_secret(params)
-
-    {:ok, {token, token_secret}}
+  defp decode_response({:ok, %{status_code: status_code, body: _, headers: _}}) do
+    {:error, "#{status_code}"}
+  end
+  defp decode_response({:error, %{reason: reason}}) do
+    {:error, "#{reason}"}
   end
 
-  defp decode_request_response(error), do: {:error, error}
+  defp decode_response(error), do: {:error, error}
 
   defp to_url(client, endpoint, params \\ nil) do
     endpoint =

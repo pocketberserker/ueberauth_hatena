@@ -6,25 +6,26 @@ defmodule UeberauthHatena.Mixfile do
   def project do
     [app: :ueberauth_hatena,
      version: "0.1.0",
-     package: package,
+     package: package(),
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      source_url: @url,
      homepage_url: @url,
-     description: description,
+     description: description(),
      deps: deps(),
-     docs: docs]
+     docs: docs()]
   end
 
   def application do
-    [applications: [:logger, :poison, :oauth, :ueberauth]]
+    [applications: [:logger, :httpoison, :oauther, :ueberauth]]
   end
 
   defp deps do
     [{:ueberauth, "~> 0.4"},
-     {:oauth, github: "tim/erlang-oauth"},
-     {:poison, "~> 3.0"},
+     {:oauther, "~> 1.1"},
+     {:httpoison, "~> 0.11"},
+     {:poison, "~> 3.1"},
      {:ex_doc, "~> 0.14", only: :dev},
      {:earmark, ">= 1.0.3", only: :dev}]
   end
